@@ -17,7 +17,6 @@ import { getErrorMessage } from "@/utils/error-util";
 const SignIn = () => {
   const isAuthenticated = useIsAuth();
   const login = useLogIn();
-  const logOut = useLogout();
 
   const [form] = Form.useForm();
   const router = useRouter();
@@ -78,7 +77,11 @@ const SignIn = () => {
           name={"email"}
           rules={[{ required: true, message: "Please input your email!" }]}
         >
-          <Input className="font-default font-normal text-dark-dark-blue" />
+          <Input
+            className="font-default font-normal text-dark-dark-blue"
+            placeholder="Email"
+            allowClear
+          />
         </FormItem>
 
         <FormItem
@@ -93,7 +96,7 @@ const SignIn = () => {
             { min: 8, message: "8 characters required" },
           ]}
         >
-          <Password className="font-default" />
+          <Password className="font-default" placeholder="password" />
         </FormItem>
 
         {errorMessage && (
@@ -114,17 +117,6 @@ const SignIn = () => {
             block={true}
           >
             Sign In
-          </Button>
-        </FormItem>
-
-        <FormItem className=" mb-2">
-          <Button
-            type="primary"
-            className=" bg-light-blue font-bold font-default"
-            block={true}
-            onClick={() => logOut()}
-          >
-            log out
           </Button>
         </FormItem>
 

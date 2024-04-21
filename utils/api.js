@@ -28,8 +28,11 @@ const api = {
     console.log(response);
     return response.data;
   },
-  put: async (url, data) => {
-    const response = await axiosInstance.put(url, data);
+  put: async (url, data, token = null) => {
+    const config = token
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {};
+    const response = await axiosInstance.put(url, data, config);
     return response.data;
   },
   patch: async (url, data) => {

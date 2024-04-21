@@ -12,6 +12,7 @@ module.exports = {
         inika: ["Inika"],
       },
       colors: {
+        "default-background": "#F4F7FE",
         "dark-bg": "#E0E5F2",
         "dark-blue": "#2B3674",
         "dark-dark-blue": "#252B42",

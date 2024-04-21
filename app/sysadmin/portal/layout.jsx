@@ -3,22 +3,24 @@
 import React, { useEffect } from "react";
 import { RiAdminFill } from "react-icons/ri";
 import { FaUniversity } from "react-icons/fa";
-import { Layout, Menu, theme } from "antd";
+import { Button, Layout, Menu, theme } from "antd";
 import Link from "next/link";
 import { useIsAuth } from "@/utils/Auth/auth-selectors";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/utils/Auth/auth-actions";
 
 const { Sider } = Layout;
 
 const NavMenuLayout = ({ children }) => {
   const router = useRouter();
   const isAuthenticated = useIsAuth();
+  const logOut = useLogout();
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/sysadmin/signin");
     }
-  }, []);
+  }, [logOut]);
 
   const {
     token: { colorBgContainer },
@@ -30,13 +32,24 @@ const NavMenuLayout = ({ children }) => {
         <Layout hasSider className="bg-dark-bg ">
           <Sider
             theme="light"
-            className=" overflow-auto h-svh fixed left-0 top-0 bottom-0 shadow-md w-1/2"
+            className="shadow-md w-1/2 h-screen"
             width={240}
+            style={{
+              overflow: "auto",
+              height: "100vh",
+              position: "fixed",
+              left: 0,
+              top: 0,
+              bottom: 0,
+            }}
           >
             <div className=" align-middle text-center font-bold text-xl my-2 border-b-2">
-              <h1 className=" font-inika text-dark-blue my-2">
+              <Link
+                className=" font-inika text-dark-blue my-2 hover:text-dark-blue "
+                href={"/sysadmin/portal/users"}
+              >
                 CareerMate Admin
-              </h1>
+              </Link>
             </div>
 
             <Menu
@@ -71,8 +84,18 @@ const NavMenuLayout = ({ children }) => {
                 },
               ]}
             />
+            <div className="text-center mb-4 absolute bottom-0 mx-auto w-full">
+              <Button
+                type="primary"
+                ghost
+                className=" px-20 font-medium"
+                onClick={() => logOut()}
+              >
+                Sign out
+              </Button>
+            </div>
           </Sider>
-          <Layout className="bg-dark-bg mx-4">{children}</Layout>
+          <Layout className="bg-dark-bg ms-64">{children}</Layout>
         </Layout>
       </div>
     </div>

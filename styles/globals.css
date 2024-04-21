@@ -17,8 +17,12 @@ table {
     @apply font-default 
 }
 
-.ant-btn{
-    @apply font-default
+.ant-btn-primary{
+    @apply font-default bg-light-blue
+}
+
+.ant-btn-dangerous{
+    
 }
 
 .ant-table-row:first-child{
