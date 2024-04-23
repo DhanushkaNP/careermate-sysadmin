@@ -95,7 +95,7 @@ const NavMenuLayout = ({ children }) => {
               </Button>
             </div>
           </Sider>
-          <Layout className="bg-dark-bg ms-64">{children}</Layout>
+          <Layout className="bg-dark-bg ms-64 me-4 pt-10">{children}</Layout>
         </Layout>
       </div>
     </div>

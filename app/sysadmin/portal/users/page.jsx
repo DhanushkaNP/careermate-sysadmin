@@ -2,12 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Input } from "antd";
-import { Table, Button, Modal, Form, Alert } from "antd";
+import { Table, Button, Form } from "antd";
 import api from "@/utils/api";
 import { useUserToken } from "@/utils/Auth/auth-selectors";
 import { AiOutlinePlus } from "react-icons/ai";
-import FormTitle from "@/components/Form/FormTitle";
 import { getErrorMessage } from "@/utils/error-util";
+import CreateFormModal from "@/components/Form/CreateFormModal";
+import DeleteModal from "@/components/DeleteModal";
+import UpdateFormModal from "@/components/Form/UpdateFormModal";
 
 const { Search } = Input;
 
@@ -35,7 +37,6 @@ const SysAdminUsers = () => {
             type="primary"
             onClick={() => {
               editOnClickHandler(key);
-              setUserEditModalDetails({ isOpen: true, userId: key });
             }}
           >
             Edit
@@ -56,8 +57,6 @@ const SysAdminUsers = () => {
 
   const [sysAdminUsers, setSysAdminUsers] = useState([]);
   const token = useUserToken();
-  const [sysAdminCreateForm] = Form.useForm();
-  const [sysAdminUpdateForm] = Form.useForm();
   const [tableLoading, setTableLoading] = useState(false);
   const [userSearchKeyWord, setUserSearchKeyWord] = useState("");
   const [tableParams, setTableParams] = useState({
@@ -77,9 +76,10 @@ const SysAdminUsers = () => {
   const [userEditModalDetails, setUserEditModalDetails] = useState({
     isOpen: false,
     userId: null,
+    firstName: null,
+    lastName: null,
+    email: null,
   });
-  const [createSysAdminError, setCreateSysAdminError] = useState(null);
-  const [UpdateSysAdminError, setUpdateSysAdminError] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -130,332 +130,232 @@ const SysAdminUsers = () => {
     }
   };
 
-  const createSysAdmin = () => {
-    sysAdminCreateForm.validateFields().then(async (values) => {
-      try {
-        await api.post("sysadmin/create", { ...values }, token);
-
-        const usersListResponse = await api.get("SysAdmin/Users", null, token);
-        setSysAdminCreateModelOpen(false);
-        setSysAdminUsers(usersListResponse.items);
-      } catch (error) {
-        const errorMessage = getErrorMessage(error.response);
-        setCreateSysAdminError(errorMessage.message);
-        return;
-      }
-      sysAdminCreateForm.resetFields();
-    });
+  const createSysAdmin = async (values) => {
+    console.log(values);
+    await api.post("sysadmin/create", { ...values }, token);
+    setSysAdminCreateModelOpen(false);
+    const usersListResponse = await api.get("SysAdmin/Users", null, token);
+    setSysAdminUsers(usersListResponse.items);
   };
 
   const deleteSysAdmin = async () => {
-    try {
-      await api.delete(`sysadmin/${userDeleteModalDetails.userId}`, token);
-      const usersListResponse = await api.get("SysAdmin/Users", null, token);
-      setSysAdminUsers(usersListResponse.items);
-      setUserDeleteModalDetails({ isOpen: false, userId: null });
-    } catch (error) {
-      throw error;
-    }
+    await api.delete(`sysadmin/${userDeleteModalDetails.userId}`, token);
+    const usersListResponse = await api.get("SysAdmin/Users", null, token);
+    setSysAdminUsers(usersListResponse.items);
+    setUserDeleteModalDetails({ isOpen: false, userId: null });
   };
 
-  const updateSysAdmin = async () => {
-    sysAdminUpdateForm.validateFields().then(async (values) => {
-      try {
-        await api.put(
-          `sysadmin/${userEditModalDetails.userId}`,
-          { ...values },
-          token
-        );
-        const usersListResponse = await api.get("SysAdmin/Users", null, token);
-        setSysAdminUsers(usersListResponse.items);
-        setUserEditModalDetails({ isOpen: false, userId: null });
-      } catch (error) {
-        const errorMessage = getErrorMessage(error.response);
-        setUpdateSysAdminError(errorMessage);
-        return;
-      }
-    });
+  const updateSysAdmin = async (values) => {
+    console.log(values);
+    console.log(`values ${values["first-name"]}`);
+    await api.put(
+      `sysadmin/${userEditModalDetails.userId}`,
+      {
+        firstName: values["first-name"],
+        lastName: values["last-name"],
+        email: values.email,
+        password: values.password,
+      },
+      token
+    );
+    const usersListResponse = await api.get("SysAdmin/Users", null, token);
+    setSysAdminUsers(usersListResponse.items);
+    setUserEditModalDetails({ isOpen: false, userId: null });
   };
 
   const editOnClickHandler = async (id) => {
     try {
-      const response = await api.get(`/sysadmin/${id}`, null, token);
-      sysAdminUpdateForm.setFieldsValue({
-        userId: response.id,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        email: response.email,
+      console.log(id);
+      await api.get(`/sysadmin/${id}`, null, token).then((response) => {
+        console.log(`response ${response.firstName}`);
+        setUserEditModalDetails({
+          isOpen: true,
+          userId: response.id,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          email: response.email,
+        });
+        console.log(userEditModalDetails.firstName);
       });
-      setUserEditModalDetails({ isOpen: true, userId: response.id });
     } catch (error) {
       throw error;
     }
   };
 
   return (
-    <div className=" mt-10">
+    <div>
       {/* Create user modal */}
-      <Modal
+      <CreateFormModal
         open={isSysAdminCreateModelOpen}
         onCancel={() => setSysAdminCreateModelOpen(false)}
-        className=" w-fit"
+        onCreate={createSysAdmin}
+        title={"Create SysAdmin User"}
         width={460}
-        onOk={createSysAdmin}
       >
-        <Form
-          labelCol={{
-            span: 6,
-          }}
-          wrapperCol={{
-            span: 18,
-          }}
-          layout="horizontal"
-          form={sysAdminCreateForm}
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              First Name
+            </span>
+          }
+          name={"FirstName"}
+          rules={[{ required: true, message: "Please input your first name!" }]}
         >
-          <FormTitle title={"Create SysAdmin User"} />
-
-          {createSysAdminError && (
-            <Alert
-              type="error"
-              message={createSysAdminError}
-              showIcon
-              closable
-              className="mb-4"
-            />
-          )}
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                First Name
-              </span>
-            }
-            name={"FirstName"}
-            rules={[
-              { required: true, message: "Please input your first name!" },
-            ]}
-          >
-            <Input className="font-default font-normal text-dark-dark-blue" />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                Last Name
-              </span>
-            }
-            name={"LastName"}
-            rules={[
-              { required: true, message: "Please input your last name!" },
-            ]}
-          >
-            <Input className="font-default font-normal text-dark-dark-blue" />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                Email
-              </span>
-            }
-            name={"Email"}
-            rules={[
-              { required: true, message: "Please input your E-mail!" },
-              { type: "email", message: "The input is not valid E-mail!" },
-            ]}
-          >
-            <Input
-              className="font-default font-normal text-dark-dark-blue"
-              autoComplete="off"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                Password
-              </span>
-            }
-            name={"Password"}
-            rules={[
-              { required: true, message: "Please input valid Password!" },
-              {
-                validator: (_, value) => {
-                  if (value && (value.length < 8 || value.length > 8)) {
-                    return Promise.reject(
-                      "Password must be exactly 8 characters!"
-                    );
-                  }
-                  return Promise.resolve();
-                },
+          <Input className="font-default font-normal text-dark-dark-blue" />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              Last Name
+            </span>
+          }
+          name={"LastName"}
+          rules={[{ required: true, message: "Please input your last name!" }]}
+        >
+          <Input className="font-default font-normal text-dark-dark-blue" />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              Email
+            </span>
+          }
+          name={"Email"}
+          rules={[
+            { required: true, message: "Please input your E-mail!" },
+            { type: "email", message: "The input is not valid E-mail!" },
+          ]}
+        >
+          <Input
+            className="font-default font-normal text-dark-dark-blue"
+            autoComplete="new-email"
+          />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              Password
+            </span>
+          }
+          name={"Password"}
+          rules={[
+            { required: true, message: "Please input valid Password!" },
+            {
+              validator: (_, value) => {
+                if (value && (value.length < 8 || value.length > 8)) {
+                  return Promise.reject(
+                    "Password must be exactly 8 characters!"
+                  );
+                }
+                return Promise.resolve();
               },
-            ]}
-          >
-            <Input.Password
-              className="font-default font-normal text-dark-dark-blue"
-              autoComplete="off"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+            },
+          ]}
+        >
+          <Input.Password
+            className="font-default font-normal text-dark-dark-blue"
+            autoComplete="new-password"
+          />
+        </Form.Item>
+      </CreateFormModal>
 
       {/* Delete user modal */}
-      <Modal
+      <DeleteModal
         open={userDeleteModalDetails.isOpen}
-        width={460}
-        closeIcon={false}
         onCancel={() =>
           setUserDeleteModalDetails({ isOpen: false, userId: null })
         }
-        footer={[
-          <Button
-            key="delete"
-            danger
-            onClick={() => {
-              deleteSysAdmin();
-            }}
-          >
-            Delete
-          </Button>,
-          <Button
-            key="cancel"
-            onClick={() =>
-              setUserDeleteModalDetails({ isOpen: false, userId: null })
-            }
-          >
-            Cancel
-          </Button>,
-        ]}
-      >
-        <h6 className=" font-default text-lg font-semibold">
-          Do you want to delete the user?
-        </h6>
-      </Modal>
+        onDelete={deleteSysAdmin}
+        message={"Do you want to delete the user?"}
+      />
 
       {/* Edit user modal */}
-      <Modal
+      <UpdateFormModal
         open={userEditModalDetails.isOpen}
         width={"35%"}
-        closeIcon={false}
         onCancel={() => {
-          setUserEditModalDetails({ isOpen: false, userId: null });
+          setUserEditModalDetails({
+            isOpen: false,
+            userId: null,
+            firstName: null,
+            lastName: null,
+            email: null,
+          });
         }}
-        footer={[
-          <Button
-            key="delete"
-            type="primary"
-            onClick={() => {
-              updateSysAdmin();
-            }}
-          >
-            Update
-          </Button>,
-          <Button
-            key="cancel"
-            onClick={() =>
-              setUserEditModalDetails({ isOpen: false, userId: null })
-            }
-          >
-            Cancel
-          </Button>,
-        ]}
+        onUpdate={updateSysAdmin}
+        title={"Update SysAdmin User"}
+        initialValues={{
+          "first-name": userEditModalDetails.firstName,
+          "last-name": userEditModalDetails.lastName,
+          email: userEditModalDetails.email,
+        }}
       >
-        <Form
-          labelCol={{
-            span: 7,
-          }}
-          wrapperCol={{
-            span: 18,
-          }}
-          layout="horizontal"
-          form={sysAdminUpdateForm}
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              First Name
+            </span>
+          }
+          name={"first-name"}
+          rules={[{ required: true, message: "Please input your first name!" }]}
         >
-          <FormTitle title={"Update SysAdmin User"} />
-
-          {UpdateSysAdminError && (
-            <Alert
-              type="error"
-              message={UpdateSysAdminError}
-              showIcon
-              closable
-              className="mb-4"
-            />
-          )}
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                First Name
-              </span>
-            }
-            name={"firstName"}
-            rules={[
-              { required: true, message: "Please input your first name!" },
-            ]}
-          >
-            <Input className="font-default font-normal text-dark-dark-blue" />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                Last Name
-              </span>
-            }
-            name={"lastName"}
-            rules={[
-              { required: true, message: "Please input your last name!" },
-            ]}
-          >
-            <Input className="font-default font-normal text-dark-dark-blue" />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                Email
-              </span>
-            }
-            name={"email"}
-            rules={[
-              { required: true, message: "Please input your E-mail!" },
-              { type: "email", message: "The input is not valid E-mail!" },
-            ]}
-          >
-            <Input
-              className="font-default font-normal text-dark-dark-blue"
-              autoComplete="new-email"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <span className="font-default text-dark-dark-blue font-bold">
-                New Password
-              </span>
-            }
-            name={"newPassword"}
-            rules={[
-              {
-                validator: (_, value) => {
-                  if (value && value.length < 8) {
-                    return Promise.reject(
-                      "Password must be exactly 8 characters!"
-                    );
-                  }
-                  return Promise.resolve();
-                },
+          <Input className="font-default font-normal text-dark-dark-blue" />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              Last Name
+            </span>
+          }
+          name={"last-name"}
+          rules={[{ required: true, message: "Please input your last name!" }]}
+        >
+          <Input className="font-default font-normal text-dark-dark-blue" />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              Email
+            </span>
+          }
+          name={"email"}
+          rules={[
+            { required: true, message: "Please input your E-mail!" },
+            { type: "email", message: "The input is not valid E-mail!" },
+          ]}
+        >
+          <Input
+            className="font-default font-normal text-dark-dark-blue"
+            autoComplete="new-email"
+          />
+        </Form.Item>
+        <Form.Item
+          label={
+            <span className="font-default text-dark-dark-blue font-bold">
+              New Password
+            </span>
+          }
+          name={"new-password"}
+          rules={[
+            {
+              validator: (_, value) => {
+                if (value && value.length < 8) {
+                  return Promise.reject(
+                    "Password must be exactly 8 characters!"
+                  );
+                }
+                return Promise.resolve();
               },
-            ]}
-          >
-            <Input.Password
-              className="font-default font-normal text-dark-dark-blue"
-              autoComplete="new-password"
-              placeholder="Password"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+            },
+          ]}
+        >
+          <Input.Password
+            className="font-default font-normal text-dark-dark-blue"
+            autoComplete="new-password"
+            placeholder="Password"
+          />
+        </Form.Item>
+      </UpdateFormModal>
 
       <div className="flex justify-between">
         <Search
