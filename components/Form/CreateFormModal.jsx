@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Form, Modal, Alert } from "antd";
+import { Form, Modal, Alert, Button } from "antd";
 import FormTitle from "./FormTitle";
 import { getErrorMessage } from "@/utils/error-util";
 
@@ -21,6 +21,8 @@ const CreateFormModal = ({
       try {
         console.log(values);
         await onCreate(values);
+        setError(null);
+        form.resetFields();
       } catch (error) {
         console.log(error.response);
         const errorMessage = getErrorMessage(error.response);
@@ -38,6 +40,14 @@ const CreateFormModal = ({
       width={width}
       onOk={handlSubmit}
       closeIcon={false}
+      footer={[
+        <Button key="create" type="primary" onClick={handlSubmit}>
+          Create
+        </Button>,
+        <Button key="cancel" onClick={() => onCancel()}>
+          Cancel
+        </Button>,
+      ]}
     >
       <Form
         labelCol={{

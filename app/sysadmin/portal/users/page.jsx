@@ -6,7 +6,6 @@ import { Table, Button, Form } from "antd";
 import api from "@/utils/api";
 import { useUserToken } from "@/utils/Auth/auth-selectors";
 import { AiOutlinePlus } from "react-icons/ai";
-import { getErrorMessage } from "@/utils/error-util";
 import CreateFormModal from "@/components/Form/CreateFormModal";
 import DeleteModal from "@/components/DeleteModal";
 import UpdateFormModal from "@/components/Form/UpdateFormModal";
@@ -175,7 +174,6 @@ const SysAdminUsers = () => {
           lastName: response.lastName,
           email: response.email,
         });
-        console.log(userEditModalDetails.firstName);
       });
     } catch (error) {
       throw error;

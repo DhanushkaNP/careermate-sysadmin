@@ -18,6 +18,7 @@ const UpdateFormModal = ({
   const [error, setError] = useState();
 
   useEffect(() => {
+    form.resetFields();
     if (initialValues) {
       form.setFieldsValue(initialValues);
     }

@@ -27,7 +27,7 @@ const DeleteModal = ({ open, onCancel, onDelete, message }) => {
         >
           Delete
         </Button>,
-        <Button key="cancel" onClick={() => onCancel}>
+        <Button key="cancel" onClick={() => onCancel()}>
           Cancel
         </Button>,
       ]}
