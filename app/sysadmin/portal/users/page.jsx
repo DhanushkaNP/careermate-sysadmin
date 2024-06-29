@@ -240,9 +240,9 @@ const SysAdminUsers = () => {
             { required: true, message: "Please input valid Password!" },
             {
               validator: (_, value) => {
-                if (value && (value.length < 8 || value.length > 8)) {
+                if (value && value.length < 8) {
                   return Promise.reject(
-                    "Password must be exactly 8 characters!"
+                    "Password should have more than 8 characters!"
                   );
                 }
                 return Promise.resolve();
@@ -253,6 +253,7 @@ const SysAdminUsers = () => {
           <Input.Password
             className="font-default font-normal text-dark-dark-blue"
             autoComplete="new-password"
+            placeholder={"Password"}
           />
         </Form.Item>
       </CreateFormModal>

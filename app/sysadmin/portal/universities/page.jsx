@@ -50,6 +50,9 @@ const Universites = () => {
   const fetchUniversities = async () => {
     try {
       await api.get("University/list", null, token).then((response) => {
+        if (response.items == null) {
+          console.log("No universities");
+        }
         setUniversities(response.items);
       });
     } catch (error) {
@@ -91,8 +94,8 @@ const Universites = () => {
 
   const deleteUniversity = async (id) => {
     await api.delete(`university/${id}`, token);
-    fetchUniversities();
     setUniversityDeleteModalDetails({ isOpen: false, id: null, name: null });
+    fetchUniversities();
   };
 
   const UpdateUniversity = async (values) => {
