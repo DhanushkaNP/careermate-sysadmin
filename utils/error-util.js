@@ -4,6 +4,7 @@ const { ErrorCodes } = require("@/shared/errorCodes");
 
 // pass the response that get from error #error.response
 export const getErrorMessage = (errorResponse) => {
+  console.log("Error Response", errorResponse);
   logError(errorResponse.data.Message, errorResponse.data.AdditionalData);
 
   if (errorResponse.status >= 400 && errorResponse.status < 500) {
