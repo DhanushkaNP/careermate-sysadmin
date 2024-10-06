@@ -34,7 +34,7 @@ const SignIn = () => {
 
     let response;
     try {
-      response = await api.post("/sysadmin/login", { ...values });
+      response = await api.post("/Sysadmin/Login", { ...values });
     } catch (error) {
       const errorMessage = getErrorMessage(error.response);
       setErrorMessage(errorMessage.message);
